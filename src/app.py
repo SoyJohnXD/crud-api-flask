@@ -2,19 +2,17 @@ from flask import Flask, request, jsonify
 from flask_swagger_ui import get_swaggerui_blueprint
 import database as db
 
-
 app = Flask(__name__)
 
-SWAGGER_URL = '/docs'  
-API_URL = '/static/Swagger.json'  
+SWAGGER_URL = '/docs'
+API_URL = '/static/Swagger.json'
 
 swaggerui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL, 
+    SWAGGER_URL,
     API_URL,
-    config={  
+    config={
         'app_name': "Flask Crud"
     },
-    
 )
 
 app.register_blueprint(swaggerui_blueprint)
@@ -25,6 +23,15 @@ def swagger_json():
     swag.update({"paths": app.config.get("paths")})
     return jsonify(swag)
 
+# Función para formatear el rol como un objeto con claves específicas
+def format_role(role):
+    return {
+        'id': role[0],
+        'name': role[1],
+        'description': role[2],
+        'permissions': role[3]
+    }
+
 # Obtener todos los roles
 @app.route('/roles', methods=['GET'])
 def get_roles():
@@ -32,7 +39,8 @@ def get_roles():
     cursor.execute("SELECT * FROM rol")
     roles = cursor.fetchall()
     cursor.close()
-    return jsonify(roles)
+    formatted_roles = [format_role(role) for role in roles]
+    return jsonify(formatted_roles)
 
 # Obtener un rol por su ID
 @app.route('/roles/<int:role_id>', methods=['GET'])
@@ -42,7 +50,8 @@ def get_role(role_id):
     role = cursor.fetchone()
     cursor.close()
     if role:
-        return jsonify(role)
+        formatted_role = format_role(role)
+        return jsonify(formatted_role)
     else:
         return jsonify({'error': 'Rol no encontrado'}), 404
 

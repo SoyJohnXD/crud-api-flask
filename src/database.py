@@ -3,9 +3,9 @@ import mysql.connector
 
 # Configuración de la base de datos
 database = mysql.connector.connect(
-    host='mysql-db',
+    host='localhost',
     user='root',
-    password='4444',
+    password='',
 )
 
 # Crear la base de datos si no existe
