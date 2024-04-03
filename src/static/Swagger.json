@@ -1,0 +1,133 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Documentación de la API",
+    "description": "API para gestionar roles",
+    "version": "1.0"
+  },
+  "paths": {
+    "/roles": {
+      "get": {
+        "summary": "Obtener todos los roles",
+        "description": "Obtiene una lista de todos los roles",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear un nuevo rol",
+        "description": "Crea un nuevo rol",
+        "responses": {
+          "201": {
+            "description": "Rol creado exitosamente"
+          },
+          "400": {
+            "description": "Datos incompletos"
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "description", "permissions"]
+            }
+          }
+        ]
+      }
+    },
+    "/roles/{role_id}": {
+      "get": {
+        "summary": "Obtener un rol por su ID",
+        "description": "Obtiene un rol por su ID",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Rol no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar un rol existente",
+        "description": "Actualiza un rol existente",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Datos incompletos"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar un rol",
+        "description": "Elimina un rol por su ID",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
