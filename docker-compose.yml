@@ -5,7 +5,7 @@ services:
     depends_on:
       - mysql-db
     ports:
-      - "1234:80"
+      - "1234:4000"
     links:
       - mysql-db
   mysql-db:
