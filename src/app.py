@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from flask_swagger_ui import get_swaggerui_blueprint
-import database as db
 
 app = Flask(__name__)
 
@@ -23,39 +23,43 @@ def swagger_json():
     swag.update({"paths": app.config.get("paths")})
     return jsonify(swag)
 
-# Función para formatear el rol como un objeto con claves específicas
-def format_role(role):
-    return {
-        'id': role[0],
-        'name': role[1],
-        'description': role[2],
-        'permissions': role[3]
-    }
 
-# Obtener todos los roles
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/bd_crud'  
+db = SQLAlchemy(app)
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    permissions = db.Column(db.String(255), nullable=False)
+
+    def __init__(self, name, description, permissions):
+        self.name = name
+        self.description = description
+        self.permissions = permissions
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'permissions': self.permissions
+        }
+
 @app.route('/roles', methods=['GET'])
 def get_roles():
-    cursor = db.database.cursor()
-    cursor.execute("SELECT * FROM rol")
-    roles = cursor.fetchall()
-    cursor.close()
-    formatted_roles = [format_role(role) for role in roles]
+    roles = Role.query.all()
+    formatted_roles = [role.to_dict() for role in roles]
     return jsonify(formatted_roles)
 
-# Obtener un rol por su ID
 @app.route('/roles/<int:role_id>', methods=['GET'])
 def get_role(role_id):
-    cursor = db.database.cursor()
-    cursor.execute("SELECT * FROM rol WHERE id = %s", (role_id,))
-    role = cursor.fetchone()
-    cursor.close()
+    role = Role.query.get(role_id)
     if role:
-        formatted_role = format_role(role)
-        return jsonify(formatted_role)
+        return jsonify(role.to_dict())
     else:
         return jsonify({'error': 'Rol no encontrado'}), 404
 
-# Crear un nuevo rol
 @app.route('/roles', methods=['POST'])
 def create_role():
     data = request.json
@@ -64,41 +68,35 @@ def create_role():
     permissions = data.get('permissions')
 
     if name and description and permissions:
-        cursor = db.database.cursor()
-        sql = "INSERT INTO rol (name, description, permissions) VALUES (%s, %s, %s)"
-        cursor.execute(sql, (name, description, permissions))
-        db.database.commit()
-        cursor.close()
+        new_role = Role(name=name, description=description, permissions=permissions)
+        db.session.add(new_role)
+        db.session.commit()
         return jsonify({'message': 'Rol creado exitosamente'}), 201
     else:
         return jsonify({'error': 'Datos incompletos'}), 400
 
-# Actualizar un rol existente
 @app.route('/roles/<int:role_id>', methods=['PUT'])
 def update_role(role_id):
     data = request.json
-    name = data.get('name')
-    description = data.get('description')
-    permissions = data.get('permissions')
-
-    if name and description and permissions:
-        cursor = db.database.cursor()
-        sql = "UPDATE rol SET name = %s, description = %s, permissions = %s WHERE id = %s"
-        cursor.execute(sql, (name, description, permissions, role_id))
-        db.database.commit()
-        cursor.close()
+    role = Role.query.get(role_id)
+    if role:
+        role.name = data.get('name', role.name)
+        role.description = data.get('description', role.description)
+        role.permissions = data.get('permissions', role.permissions)
+        db.session.commit()
         return jsonify({'message': 'Rol actualizado exitosamente'})
     else:
-        return jsonify({'error': 'Datos incompletos'}), 400
+        return jsonify({'error': 'Rol no encontrado'}), 404
 
-# Eliminar un rol
 @app.route('/roles/<int:role_id>', methods=['DELETE'])
 def delete_role(role_id):
-    cursor = db.database.cursor()
-    cursor.execute("DELETE FROM rol WHERE id = %s", (role_id,))
-    db.database.commit()
-    cursor.close()
-    return jsonify({'message': 'Rol eliminado exitosamente'})
+    role = Role.query.get(role_id)
+    if role:
+        db.session.delete(role)
+        db.session.commit()
+        return jsonify({'message': 'Rol eliminado exitosamente'})
+    else:
+        return jsonify({'error': 'Rol no encontrado'}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, port=4000)
