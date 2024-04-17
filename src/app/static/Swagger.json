@@ -1,0 +1,267 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Documentación de la API",
+    "description": "API para gestionar roles y usuarios, incluyendo autenticación y notificación por correo electrónico",
+    "version": "1.0"
+  },
+  "host": "localhost:4000",
+  "schemes": ["http"],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'"
+    }
+  },
+  "paths": {
+    "/register": {
+      "post": {
+        "summary": "Registrar un nuevo usuario",
+        "description": "Crea una cuenta de usuario nueva. No requiere autenticación.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": ["email", "password"]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Usuario registrado con éxito"
+          },
+          "409": {
+            "description": "El correo ya existe"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Iniciar sesión",
+        "description": "Autentica a un usuario y devuelve un token JWT. No requiere autenticación.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": ["email", "password"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Autenticación exitosa, token proporcionado"
+          },
+          "401": {
+            "description": "Credenciales inválidas"
+          }
+        }
+      }
+    },
+    "/roles": {
+      "get": {
+        "summary": "Obtener todos los roles",
+        "description": "Obtiene una lista de todos los roles. Requiere autenticación de administrador.",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear un nuevo rol",
+        "description": "Crea un nuevo rol. Requiere autenticación de administrador.",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "description", "permissions"]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Rol creado exitosamente"
+          },
+          "400": {
+            "description": "Datos incompletos"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      }
+    },
+    "/roles/{role_id}": {
+      "get": {
+        "summary": "Obtener un rol por su ID",
+        "description": "Obtiene un rol por su ID. Requiere autenticación de administrador.",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Rol no encontrado"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar un rol existente",
+        "description": "Actualiza un rol existente. Requiere autenticación de administrador.",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Rol actualizado exitosamente"
+          },
+          "400": {
+            "description": "Datos incompletos"
+          },
+          "404": {
+            "description": "Rol no encontrado"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar un rol",
+        "description": "Elimina un rol por su ID. Requiere autenticación de administrador.",
+        "parameters": [
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Rol eliminado exitosamente"
+          },
+          "404": {
+            "description": "Rol no encontrado"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      }
+    },
+    "/update_user_role/{user_id}/{role_id}": {
+      "put": {
+        "summary": "Asignar un rol a un usuario",
+        "description": "Asigna un rol a un usuario y notifica por correo electrónico. Requiere autenticación de administrador.",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "role_id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Rol actualizado exitosamente y correo enviado"
+          },
+          "404": {
+            "description": "Usuario o rol no encontrado"
+          },
+          "403": {
+            "description": "Acceso denegado"
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,3 +4,6 @@ mysql-connector-python==8.0.28
 flask-swagger-ui
 mysqlclient
 flask-sqlalchemy
+flask_jwt_extended
+Flask-Mail
+flask-cors
