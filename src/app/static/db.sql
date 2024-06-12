@@ -19,13 +19,12 @@ CREATE TABLE IF NOT EXISTS User (
 
 -- Insert initial data into 'Role' table
 INSERT INTO Role (name, description, permissions) VALUES 
-('Administrator', 'Full access to the system', '["create", "read", "update", "delete"]'),
-('Employee', 'Standard user access', '["read"]'),
-('HR Manager', 'Human resources related permissions', '["create", "read", "update"]');
+('Administrator', 'Acceso total al sistema 🥸', '["create", "read", "update", "delete"]'),
+('Employee', 'Acceso estandar a las funciones del sistema 👨‍🦱', '["read"]'),
+('HR Administrad', 'Permisos relacionados con recursos Humanos', '["create", "read", "update"]');
 
 -- Insert initial data into 'User' table
-INSERT INTO user (email, password, role_id) VALUES 
-('admin@example.com', 'adminpassword', (SELECT id FROM Role WHERE name = 'Administrator')),
-('user@example.com', 'userpassword', (SELECT id FROM Role WHERE name = 'Employee')),
-('hrmanager@example.com', 'hrpassword', (SELECT id FROM Role WHERE name = 'HR Manager'));
+INSERT INTO user (`email`, `password`, `role_id`) VALUES 
+('admin@admin.com', 'pass', 1),
+('user@user.com', 'user', 2);
 

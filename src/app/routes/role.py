@@ -1,4 +1,5 @@
 # role_routes.py
+import ast
 from flask import Blueprint, jsonify, request
 from app.models import Role, User, db
 from flask_jwt_extended import jwt_required
@@ -13,7 +14,17 @@ role_blueprint = Blueprint('roles', __name__)
 @admin_required
 def get_roles():
     roles = Role.query.all()
-    formatted_roles = [role.to_dict() for role in roles]
+    formatted_roles = []
+    for role in roles:
+        role_dict = role.to_dict()
+        # Asumiendo que `permissions` es una cadena de texto que necesita ser evaluada
+        if 'permissions' in role_dict:
+            try:
+                role_dict['permissions'] = ast.literal_eval(role_dict['permissions'])
+            except ValueError:
+                # Maneja el caso en que el string no se pueda evaluar correctamente
+                role_dict['permissions'] = []
+        formatted_roles.append(role_dict)
     return jsonify(formatted_roles)
 
 @role_blueprint.route('/roles/<int:role_id>', methods=['GET'])

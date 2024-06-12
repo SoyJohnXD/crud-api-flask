@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.models import  User, db
+from app.models import  User, db , Role
 from flask_jwt_extended import create_access_token, jwt_required
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -31,4 +31,30 @@ def login():
         return jsonify({'message': 'Credenciales inválidas'}), 401
     
     access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token), 200
+    role_data = {}
+    if user.role_id:
+        role = Role.query.filter_by(id=user.role_id).first()
+        if role:
+            role_data = role.to_dict()
+    
+    user_data = {
+        'id': user.id,
+        'email': user.email,
+        'role': role_data,
+        'access_token': access_token
+    }        
+    return jsonify(user_data), 200
+
+@auth_blueprint.route('/users', methods=['GET'])
+@jwt_required()  # Requiere autenticación para acceder a este endpoint
+def get_users():
+    # Realiza una consulta que incluye los roles. Usar 'join' es más eficiente si tienes configuradas las relaciones en SQLAlchemy.
+    users = User.query.join(Role, User.role_id == Role.id).add_columns(User.id, User.email, Role.name).all()
+    
+    users_data = [{
+        'id': user.User.id,  # Acceso a la columna de usuario
+        'email': user.User.email,
+        'role': user.name    # Acceso a la columna de nombre de rol
+    } for user in users]  # Creación de una lista de diccionarios que incluyen el nombre del rol
+
+    return jsonify(users_data), 200

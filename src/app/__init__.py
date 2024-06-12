@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Flask
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
@@ -10,6 +11,7 @@ def create_app():
     # Configuración de la base de datos
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/bd_crud'
     app.config['JWT_SECRET_KEY'] = 'tu_super_secreto'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
     
      # Configuración de Flask-Mail
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
